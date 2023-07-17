@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "inveniordm-ai-curation-poc-db",
+      "Group": "Servers",
+      "Host": "inveniordm-ai-curation-poc-db-1",
+      "Port": 5432,
+      "MaintenanceDB": "postgres",
+      "Username": "inveniordm-ai-curation-poc",
+      "SSLMode": "prefer"
+    }
+  }
+}
