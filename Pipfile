@@ -9,6 +9,9 @@ check-manifest = ">=0.25"
 [packages]
 invenio-app-rdm = {extras = ["postgresql", "opensearch2"], version = "~=11.0.0"}
 inveniordm-ai-curation-poc = {editable="True", path="./site"}
+inveniordm-ai-poc = {editable="True", path="./vendorized/invenio-ai-poc"}
+invenio-subjects-mesh = "==2023.01.01"
+
 
 uwsgi = ">=2.0"
 uwsgitop = ">=0.11"
