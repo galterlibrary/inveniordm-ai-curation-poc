@@ -5,7 +5,7 @@
 # invenio-ai-poc is free software; you can redistribute it and/or modify it
 # under the terms of the MIT License; see LICENSE file for more details.
 
-from flask import Blueprint, render_template, session
+from flask import Blueprint, request, render_template, session
 
 
 blueprint = Blueprint(
@@ -15,9 +15,11 @@ blueprint = Blueprint(
 )
 
 
-# STOPPED HERE add post
-@blueprint.route("/ai-poc-1")
+@blueprint.route("/ai-poc-1", methods=["POST"])
 def ai_poc_1():
+    payload = request.get_json()
+    print("payload")
+    print(payload)
     return {
         "metadata": {
             "subjects": [{"subject": "Melon"}]

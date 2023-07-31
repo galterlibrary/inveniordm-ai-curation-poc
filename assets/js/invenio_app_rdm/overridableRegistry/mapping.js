@@ -1,12 +1,13 @@
 import axios from "axios";
 import _isEmpty from "lodash/isEmpty"
+import _uniqBy from "lodash/uniqBy";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { FastField, Field, getIn } from "formik";
 import { FieldLabel, RichInputField } from "react-invenio-forms";
 
 import { RDMDepositRecordSerializer } from "./DepositRecordSerializer";
-
+import { SubjectsFieldWithAI } from "./SubjectsField";
 
 
 function getFieldErrors(form, fieldPath) {
@@ -16,58 +17,35 @@ function getFieldErrors(form, fieldPath) {
 };
 
 
-// class AIBlob {
-//   constructor(options) {
-//     this.url = options.url;
-
-//   }
-
-//   // start with something very tied to form and then abstract
-//   submit() {
-//     // push data
-//     // get response
-//   }
-// }
+function getFormSlice(formValues, fieldPath) {
+  return getIn(formValues, fieldPath, []);
+};
 
 
-// function RichInputFieldWithAI(props) {
-//   // State
 
-//   // Props
-//   const {ai, ...rest} = props;
+function addToRemoteSelectField(form) {
+  console.log("addToRemoteSelectField");
+  const fieldPath = "metadata.subjects";
 
-//   // Specific to this component
+  const subjects = getIn(form.values, fieldPath, []);
 
-//   // Derived
+  const newSubject = {
+    id: "https://id.nlm.nih.gov/mesh/D001650Q000097",
+    key: "Bile Duct Neoplasms/blood",
+    subject: "Bile Duct Neoplasms/blood",
+    text: "\u2728 (MeSH) Bile Duct Neoplasms/blood",
+    value: "Bile Duct Neoplasms/blood",
+  }
 
-//   // Update
+  form.setFieldValue(
+    fieldPath,
+    _uniqBy(
+      [...subjects, newSubject],
+      "value"
+    )
+  );
 
-//   // Render
-//   return (
-//     <RichInputField
-//       {...rest}
-//     />
-//   );
-// }
-
-
-// function FormButton() {
-//   const { disabled, onClick, label, loading } = this.props;
-//   return (
-//     <Field>
-//       {({ form: formik }) => (
-//         <Form.Button
-//           className="positive"
-//           size="mini"
-//           loading={loading}
-//           disabled={disabled || loading}
-//           onClick={(e) => onClick(e, formik)}
-//           content={label}
-//         />
-//       )}
-//     </Field>
-//   );
-// }
+};
 
 
 /**
@@ -96,18 +74,22 @@ class AiApiClient {
     };
     this.axiosWithConfig = axios.create(this.apiConfig);
     this.cancelToken = axios.CancelToken;
-
   }
 
   async _createResponse(axiosRequest) {
     try {
       const response = await axiosRequest();
-      const data = this.recordSerializer.deserialize(response.data || {});
-      const errors = this.recordSerializer.deserializeErrors(
+      console.log("response");
+      console.dir(response);
+      const data = this.serializer.deserialize(response.data || {});
+      const errors = this.serializer.deserializeErrors(
         response.data.errors || []
       );
       return new DepositApiClientResponse(data, errors);
     } catch (error) {
+      // This is actually for a truly exceptional problem
+      console.log("error");
+      console.dir(error);
       const errorData = error.response.data;
       throw new DepositApiClientResponse({}, errorData);
     }
@@ -184,12 +166,17 @@ function DescriptionsFieldWithAI(props) {
       return;
     }
 
-    let result = response.data;
+    addToRemoteSelectField(form);
+
+    let result = {
+      "sent": form.values,
+      "received": response.data
+    };
+
     console.log("Got response");
     console.log(result);
-    // let result = {ai: "done AI"};
-
     setDoneAI(result);
+
     console.log("Done AI");
   }
 
@@ -207,14 +194,13 @@ function DescriptionsFieldWithAI(props) {
 
       { hasDoneAI && (
           <div>
+            <br/>
             <div>Done AI</div>
-            <hr/>
-            <div>
-              {JSON.stringify(doneAI)}
-            </div>
+            <br />
           </div>
         )
       }
+
       <br/>
     </>
   );
@@ -229,4 +215,5 @@ function FormikDescriptionsFieldWithAI(props) {
 
 export const overriddenComponents = {
   "InvenioAppRdm.Deposit.DescriptionsField.layout": FormikDescriptionsFieldWithAI,
+  "InvenioAppRdm.Deposit.SubjectsField.layout": SubjectsFieldWithAI
 };
